@@ -1,0 +1,66 @@
+{
+  "fill" : {
+    "automatic-gradient" : "display-p3:0.06919,0.19224,0.96783,1.00000"
+  },
+  "groups" : [
+    {
+      "layers" : [
+        {
+          "fill" : {
+            "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+          },
+          "image-name" : "dog.fill.png",
+          "name" : "dog.fill",
+          "position" : {
+            "scale" : 4.43,
+            "translation-in-points" : [
+              12.24609375,
+              178.9446875
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+          },
+          "image-name" : "dog.fill.png",
+          "name" : "dog.fill",
+          "position" : {
+            "scale" : 4.43,
+            "translation-in-points" : [
+              193.87609375000005,
+              -157.265
+            ]
+          }
+        },
+        {
+          "fill" : {
+            "solid" : "display-p3:1.00000,1.00000,1.00000,1.00000"
+          },
+          "image-name" : "dog.fill.png",
+          "name" : "dog.fill",
+          "position" : {
+            "scale" : 4.43,
+            "translation-in-points" : [
+              -169.38390625,
+              -157.265
+            ]
+          }
+        }
+      ],
+      "shadow" : {
+        "kind" : "neutral",
+        "opacity" : 0.5
+      },
+      "translucency" : {
+        "enabled" : true,
+        "value" : 0.5
+      }
+    }
+  ],
+  "supported-platforms" : {
+    "squares" : [
+      "iOS"
+    ]
+  }
+}
