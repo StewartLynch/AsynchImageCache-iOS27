@@ -1,6 +1,6 @@
 # AsyncImage Cache
 
-![AppIcon128](Images/AppIcon128.png) This is the **starter project** for the video on AsyncImage Cache in iOS 27
+![AppIcon128](Images/AppIcon128.png) This is the **completed Source Code** for the video on AsyncImage Cache in iOS 27
 
 If you want to support my work, you can - </br>
 
