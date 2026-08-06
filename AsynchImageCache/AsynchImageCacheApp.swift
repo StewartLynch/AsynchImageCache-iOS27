@@ -19,7 +19,7 @@ import SwiftUI
 struct AsynchImageCacheApp: App {
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            DogBreedsView()
         }
     }
 }
