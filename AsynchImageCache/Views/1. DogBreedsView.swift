@@ -18,11 +18,20 @@ import SwiftUI
 struct DogBreedsView: View {
   @State private var dogStore = DogStore()
   @State private var selectedBreed = DogBreed.airedale
-  
+  @State private var requestMode = ImageRequestMode.httpRules
+  @State private var imageCache = AsyncImageCacheController(
+    cache: ImageNetworking.imageCache,
+    cacheDirectory: ImageNetworking.cacheDirectory
+  )
   var body: some View {
     NavigationStack {
       VStack(spacing: 0) {
         BreedSelector(selectedBreed: $selectedBreed)
+        CachePolicySelector(requestMode: $requestMode)
+        CacheStatusView(
+          diskUsage: imageCache.formattedDiskUsage,
+          diskCapacity: imageCache.formattedDiskCapacity
+        )
         Divider()
         if dogStore.isLoading && dogStore.imageURLs.isEmpty {
           DogLoadingView(breed: selectedBreed)
@@ -36,14 +45,24 @@ struct DogBreedsView: View {
           DogGridView(
             imageURLs: dogStore.imageURLs,
             breed: selectedBreed,
+            requestMode: requestMode,
             dogStore: dogStore
           )
         }
       }
       .navigationTitle("AsyncImage Cache")
+      .toolbar {
+        Button(role: .destructive) {
+          imageCache.clearCache()
+        }
+      }
       .task(id: selectedBreed) {
         await dogStore.loadImages(for: selectedBreed)
       }
+    }
+    .asyncImageURLSession(ImageNetworking.imageSession)
+    .task {
+      await imageCache.monitorDiskUsage()
     }
   }
 }
@@ -71,6 +90,7 @@ private struct BreedSelector: View {
 
 private struct DogGridView: View {
   let breed: DogBreed
+  let requestMode: ImageRequestMode
   let dogStore: DogStore
   private let numberedImages: [NumberedDogImage]
   
@@ -82,9 +102,11 @@ private struct DogGridView: View {
   init(
     imageURLs: [URL],
     breed: DogBreed,
+    requestMode: ImageRequestMode,
     dogStore: DogStore
   ) {
     self.breed = breed
+    self.requestMode = requestMode
     self.dogStore = dogStore
     numberedImages = imageURLs.enumerated().map { offset, imageURL in
       NumberedDogImage(
@@ -109,6 +131,7 @@ private struct DogGridView: View {
           DogImageCell(
             imageURL: image.imageURL,
             breed: breed,
+            requestMode: requestMode,
             sequenceNumber: image.number
           )
         }
@@ -128,15 +151,30 @@ private struct DogGridView: View {
 }
 
 private struct DogImageCell: View {
-  let imageURL: URL
   let breed: DogBreed
   let sequenceNumber: Int
+  let request: URLRequest
+  
+  init(
+    imageURL: URL,
+    breed: DogBreed,
+    requestMode: ImageRequestMode,
+    sequenceNumber: Int
+  ) {
+    self.breed = breed
+    self.sequenceNumber = sequenceNumber
+    self.request = URLRequest(
+      url: imageURL,
+      cachePolicy: requestMode.cachePolicy,
+      timeoutInterval: 15
+    )
+  }
   
   var body: some View {
     Color.clear
       .aspectRatio(1, contentMode: .fit)
       .overlay {
-        AsyncImage(url: imageURL) { phase in
+        AsyncImage(request: request) { phase in
           switch phase {
           case .empty:
             ProgressView()
@@ -155,6 +193,7 @@ private struct DogImageCell: View {
             EmptyView()
           }
         }
+        .id(request)
       }
       .background(.quaternary)
       .overlay(alignment: .bottomTrailing) {
@@ -165,7 +204,36 @@ private struct DogImageCell: View {
   }
 }
 
+private struct CachePolicySelector: View {
+    @Binding var requestMode: ImageRequestMode
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            HStack {
+                Text("Request policy")
+                    .font(.headline)
+
+                Spacer()
+
+                Picker("Request policy", selection: $requestMode) {
+                    ForEach(ImageRequestMode.allCases) { mode in
+                        Text(mode.title)
+                            .tag(mode)
+                    }
+                }
+                .pickerStyle(.menu)
+            }
+
+            Text(requestMode.explanation)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+        }
+        .padding(.horizontal)
+        .padding(.bottom, 8)
+    }
+}
 
 #Preview {
   DogBreedsView()
 }
+
